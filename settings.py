@@ -16,7 +16,8 @@ level_map = [
     'X                X',
     'X      XX        X',
     'X                X',
-    'XXXXXXXXXXXXXXXXXX']
+    'XXXXXXXXXXXXXXXXXX'
+]
 
 tile_size = 64
 # screen_width = len(level_map[0]) * tile_size
