@@ -23,7 +23,23 @@ class Coin(Tile):
 class Spike(Tile):
     def __init__(self, size, x, y):
         super().__init__(size, x, y)
+        center_x = x + int(size / 2)
+        center_y = y + int(size / 2)
         self.image.fill('gray')
+        self.rect = self.image.get_rect(center=(center_x, center_y))
+
+
+class Key(Tile):
+    def __init__(self, size, x, y):
+        super().__init__(size, x, y)
+        center_x = x + int(size / 2)
+        center_y = y + int(size / 2)
+        self.image.fill('#ecaa6b')
+        self.rect = self.image.get_rect(center=(center_x, center_y))
+
+
+class Goal(Tile):
+    def __init__(self, size, x, y):
+        super().__init__(size, x, y)
+        self.image.fill('brown')
         self.rect = self.image.get_rect(topleft=(x, y))
-
-

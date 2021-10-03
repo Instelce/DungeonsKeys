@@ -3,24 +3,34 @@ import pygame, sys
 from settings import *
 from level import Level
 from overworld import Overworld
+from ui import UI
 
 
 class Game:
     def __init__(self):
 
         # Game attributes
-        self.max_level = 1
+        self.max_level = 0
         self.max_health = 100
         self.current_health = 100
-        self.coins_count = 0
+        self.coins_amount = 0
+        self.key = 0
 
         # Overworld creation
-        # self.overworld = Overworld(0, self.max_level, screen, self.create_level)
-        self.level = Level(0, screen, self.create_overworld)
-        self.status = 'level'
+        self.overworld = Overworld(0, self.max_level, screen, self.create_level)
+        self.status = 'overworld'
+
+        # User interface
+        self.ui = UI(screen)
 
     def create_level(self, current_level):
-        self.level = Level(current_level, screen, self.create_overworld)
+        self.level = Level(current_level,
+                           screen,
+                           self.create_overworld,
+                           self.change_coins,
+                           self.change_health,
+                           self.change_key,
+                           self.key_find)
         self.status = 'level'
 
     def create_overworld(self, current_level, new_max_level):
@@ -29,11 +39,37 @@ class Game:
         self.overworld = Overworld(current_level, self.max_level, screen, self.create_level)
         self.status = 'overworld'
 
+    def change_coins(self, amount):
+        self.coins_amount += amount
+
+    def change_health(self, amount):
+        self.current_health += amount
+
+    def change_key(self, amount):
+        self.key += amount
+
+    def key_find(self):
+        if self.key == 1: return True
+        else: return False
+
+    def check_game_over(self):
+        if self.current_health <= 0:
+            self.key = 0
+            self.current_health = 100
+            self.coins_amount = 0
+            self.max_level = 0
+            self.overworld = Overworld(0, self.max_level, screen, self.create_level)
+            self.status = 'overworld'
+
     def run(self):
         if self.status == 'overworld':
             self.overworld.run()
         else:
             self.level.run()
+            self.ui.show_health(self.current_health, self.max_health)
+            self.ui.show_coins(self.coins_amount)
+            self.ui.show_key(self.key)
+            self.check_game_over()
 
 
 pygame.init()
