@@ -12,6 +12,7 @@ class Level:
     def __init__(self, current_level, surface, create_overworld, change_coins, change_health, change_key, key_find):
         # General setup
         self.display_surface = surface
+        self.current_x = 0
 
         # Overworld connection
         self.current_level = current_level
@@ -62,7 +63,7 @@ class Level:
                     spike = Spike(tile_size, x, y)
                     self.spikes.add(spike)
                 elif cell == 'P':
-                    player_sprite = Player((x, y), change_health)
+                    player_sprite = Player((x, y), self.display_surface, change_health)
                     self.player.add(player_sprite)
                 elif cell == 'G':
                     goal_sprite = Goal(tile_size, x, y)
@@ -79,8 +80,17 @@ class Level:
             if sprite.rect.colliderect(player.rect):
                 if player.direction.x < 0:
                     player.rect.left = sprite.rect.right
+                    player.on_left = True
+                    self.current_x = player.rect.left
                 elif player.direction.x > 0:
                     player.rect.right = sprite.rect.left
+                    player.on_right = True
+                    self.current_x = player.rect.right
+
+        if player.on_left and (player.rect.left < self.current_x or player.direction.x >= 0):
+            player.on_left = False
+        elif player.on_right and (player.rect.right > self.current_x or player.direction.x <= 0):
+            player.on_right = False
 
     def player_vertical_collision(self, tiles):
         player = self.player.sprite
@@ -91,9 +101,16 @@ class Level:
                 if player.direction.y > 0:
                     player.rect.bottom = sprite.rect.top
                     player.direction.y = 0
+                    player.on_ground = True
                 elif player.direction.y < 0:
                     player.rect.top = sprite.rect.bottom
                     player.direction.y = 0
+                    player.on_ceiling = True
+
+        if player.on_ground and player.direction.y < 0 or player.direction.y > 1:
+            player.on_ground = False
+        if player.on_ceiling and player.direction.y > 0:
+            player.on_ceiling = False
 
     def complex_camera(self, camera, target_rect):
         # we want to center target_rect
