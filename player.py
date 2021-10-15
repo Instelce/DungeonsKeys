@@ -113,6 +113,10 @@ class Player(pygame.sprite.Sprite):
             self.facing_right = False
         elif keys[pygame.K_SPACE] and self.on_ground:
             self.jump()
+        elif keys[pygame.K_RIGHT] and keys[pygame.K_SPACE] and self.on_ground:
+            self.jump()
+            self.direction.x = 1
+            self.facing_right = True
         else:
             self.direction.x = 0
 

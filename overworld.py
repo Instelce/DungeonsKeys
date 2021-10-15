@@ -42,6 +42,10 @@ class Overworld:
         self.move_direction = pygame.math.Vector2(0, 0)
         self.speed = 8
 
+        # Title
+        self.title = pygame.image.load('graphics/banner.png')
+        self.title_rect = self.title.get_rect(topleft=(50, 0))
+
         # Sprites
         self.setup_nodes()
         self.setup_icon()
@@ -100,3 +104,5 @@ class Overworld:
         self.icon.update()
         self.icon.draw(self.display_surface)
         self.nodes.draw(self.display_surface)
+
+        self.display_surface.blit(self.title, self.title_rect)

@@ -7,6 +7,7 @@ from player import Player
 from camera import Camera
 from game_data import levels
 from support import import_csv_layout, import_cut_graphics
+from spike import Spike
 
 
 class Level:
@@ -34,6 +35,14 @@ class Level:
         # Coins
         coin_layout = import_csv_layout(level_data['coins'])
         self.coin_sprites = self.create_tile_group(coin_layout, 'coins')
+
+        # Spikes
+        spike_layout = import_csv_layout(level_data['spikes'])
+        self.spike_sprites = self.create_tile_group(spike_layout, 'spikes')
+
+        # Constraint
+        constraint_layout = import_csv_layout(level_data['constraints'])
+        self.constraint_sprites = self.create_tile_group(constraint_layout, 'constraints')
 
         # User interface
         self.change_coins = change_coins
@@ -69,6 +78,11 @@ class Level:
                         sprite = StaticTile(tile_size, x, y, tile_surface)
                     if type == 'coins':
                         sprite = Coin(tile_size, x, y, 'graphics/coins')
+                    if type == 'spikes':
+                        if val == '0': sprite = Spike(tile_size, x, y, 'vertical')
+                        elif val == '1': sprite = Spike(tile_size, x, y, 'horizontal')
+                    if type == 'constraints':
+                        sprite = Tile(tile_size, x, y)
                         
                     sprite_group.add(sprite)
 
@@ -156,11 +170,37 @@ class Level:
                 self.change_coins(1)
 
     def check_spike_collision(self):
-        spike_collisions = pygame.sprite.spritecollide(self.player.sprite, self.spikes, False)
+        spike_collisions = pygame.sprite.spritecollide(self.player.sprite, self.spike_sprites, False)
         player = self.player.sprite
 
         if spike_collisions:
+            for sprite in self.spike_sprites.sprites():
+                if sprite.rect.colliderect(player.rect):
+                    if player.direction.x < 0:
+                        player.rect.left = sprite.rect.right
+                        player.on_left = True
+                        self.current_x = player.rect.left
+                    elif player.direction.x > 0:
+                        player.rect.right = sprite.rect.left
+                        player.on_right = True
+                        self.current_x = player.rect.right
+            for sprite in self.spike_sprites.sprites():
+                if sprite.rect.colliderect(player.rect):
+                    if player.direction.y > 0:
+                        player.rect.bottom = sprite.rect.top
+                        player.direction.y = 0
+                        player.on_ground = True
+                    elif player.direction.y < 0:
+                        player.rect.top = sprite.rect.bottom
+                        player.direction.y = 0
+                        player.on_ceiling = True
             player.get_damage()
+
+
+    def spike_collision_reverse(self):
+        for spike in self.spike_sprites.sprites():
+            if pygame.sprite.spritecollide(spike, self.constraint_sprites, False):
+                spike.reverse()
 
     def run(self):
         self.input()
@@ -168,7 +208,7 @@ class Level:
         # Camera
         self.camera.update(self.player.sprite)
 
-        # Tiles
+        # Terrain
         for tile in self.terrain_sprites:
             self.display_surface.blit(tile.image, self.camera.apply(tile))
 
@@ -181,13 +221,20 @@ class Level:
         for tile in self.goal:
             self.display_surface.blit(tile.image, self.camera.apply(tile))
 
+        self.check_win()
+        self.check_coin_collision()
+        # self.check_key_collision()
+        self.check_spike_collision()
+
         # Coins
         self.coin_sprites.update()
         for tile in self.coin_sprites:
             self.display_surface.blit(tile.image, self.camera.apply(tile))
 
-        # self.check_key_collision()
-        self.check_win()
-        self.check_coin_collision()
-        # self.check_spike_collision()
+        # Spike
+        self.spike_sprites.update()
+        self.constraint_sprites.update()
+        self.spike_collision_reverse()
+        for tile in self.spike_sprites:
+            self.display_surface.blit(tile.image, self.camera.apply(tile))
 
