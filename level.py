@@ -36,6 +36,10 @@ class Level:
         coin_layout = import_csv_layout(level_data['coins'])
         self.coin_sprites = self.create_tile_group(coin_layout, 'coins')
 
+        # Keys
+        key_layout = import_csv_layout(level_data['keys'])
+        self.key_sprites = self.create_tile_group(key_layout, 'keys')
+
         # Spikes
         spike_layout = import_csv_layout(level_data['spikes'])
         self.spike_sprites = self.create_tile_group(spike_layout, 'spikes')
@@ -78,6 +82,8 @@ class Level:
                         sprite = StaticTile(tile_size, x, y, tile_surface)
                     if type == 'coins':
                         sprite = Coin(tile_size, x, y, 'graphics/coins')
+                    if type == 'keys':
+                        sprite = Key(tile_size, x, y, 'graphics/key/move')
                     if type == 'spikes':
                         if val == '0': sprite = Spike(tile_size, x, y, 'vertical')
                         elif val == '1': sprite = Spike(tile_size, x, y, 'horizontal')
@@ -221,6 +227,7 @@ class Level:
         for tile in self.goal:
             self.display_surface.blit(tile.image, self.camera.apply(tile))
 
+        # Check collision
         self.check_win()
         self.check_coin_collision()
         # self.check_key_collision()
@@ -231,7 +238,12 @@ class Level:
         for tile in self.coin_sprites:
             self.display_surface.blit(tile.image, self.camera.apply(tile))
 
-        # Spike
+        # Keys
+        self.key_sprites.update()
+        for tile in self.key_sprites:
+            self.display_surface.blit(tile.image, self.camera.apply(tile))
+
+        # Spike and constraint
         self.spike_sprites.update()
         self.constraint_sprites.update()
         self.spike_collision_reverse()

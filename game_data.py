@@ -3,6 +3,7 @@ level_0 = {
     'terrain': 'levels/0/level_0_terrain.csv',
     'player': 'levels/0/level_0_player.csv',
     'coins': 'levels/0/level_0_coins.csv',
+    'keys': 'levels/0/level_0_keys.csv',
     'spikes': 'levels/0/level_0_spike.csv',
     'constraints': 'levels/0/level_0_constraints.csv',
     'unlock': 1,

@@ -18,11 +18,9 @@ class Spike(AnimatedTile):
 			self.rect.x += self.speed
 		else:
 			self.rect.y += self.speed
-		self.angle += 1
+		self.angle += 4
 
 	def rotate(self):
-		w, h = self.image.get_size()
-
 		if self.angle >= 360:
 			self.angle = 0
 
