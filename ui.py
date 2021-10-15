@@ -9,9 +9,9 @@ class UI:
 
         # Health
         self.health_bar = pygame.image.load('graphics/ui/health_bar.png').convert_alpha()
-        self.health_bar_topleft = (54, 39)
-        self.bar_max_width = 152
-        self.bar_height = 4
+        self.health_bar_topleft = (50, 20)
+        self.bar_max_width = 160
+        self.bar_height = 12
 
         # Coins
         self.coin = pygame.image.load('graphics/ui/coin.png').convert_alpha()

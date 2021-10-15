@@ -4,6 +4,7 @@ from settings import *
 from level import Level
 from overworld import Overworld
 from ui import UI
+from debug import debug
 
 
 class Game:
@@ -68,7 +69,7 @@ class Game:
             self.level.run()
             self.ui.show_health(self.current_health, self.max_health)
             self.ui.show_coins(self.coins_amount)
-            self.ui.show_key(self.key)
+            # self.ui.show_key(self.key)
             self.check_game_over()
 
 
@@ -86,6 +87,9 @@ while True:
 
     screen.fill('black')
     game.run()
+
+    # For debuging
+    debug(pygame.mouse.get_pos())
 
     pygame.display.update()
     clock.tick(60)

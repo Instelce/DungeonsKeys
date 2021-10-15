@@ -6,6 +6,7 @@ from tiles import *
 from player import Player
 from camera import Camera
 from game_data import levels
+from support import import_csv_layout, import_cut_graphics
 
 
 class Level:
@@ -16,21 +17,33 @@ class Level:
 
         # Overworld connection
         self.current_level = current_level
-        level_data = levels[current_level]
-        level_name = level_data['name']
+        level_data = levels[self.current_level]
         self.new_max_level = level_data['unlock']
         self.create_overworld = create_overworld
 
-        self.setup_level(level_data['level_map'], change_health)
+        # PLayer
+        player_layout = import_csv_layout(level_data['player'])
+        self.player = pygame.sprite.GroupSingle()
+        self.goal = pygame.sprite.GroupSingle()
+        self.player_setup(player_layout, change_health)
+
+        # Terrain
+        terrain_layout = import_csv_layout(level_data['terrain'])
+        self.terrain_sprites = self.create_tile_group(terrain_layout, 'terrain')
+
+        # Coins
+        coin_layout = import_csv_layout(level_data['coins'])
+        self.coin_sprites = self.create_tile_group(coin_layout, 'coins')
 
         # User interface
         self.change_coins = change_coins
         self.change_key = change_key
+        self.change_health = change_health
         self.key_find = key_find
 
         # Setup camera
-        total_level_width = len(level_map[0]) * tile_size
-        total_level_height = len(level_map) * tile_size
+        total_level_width = len(terrain_layout[0]) * tile_size
+        total_level_height = screen_height * tile_size
         self.camera = Camera(self.complex_camera, total_level_width, total_level_height)
 
     def input(self):
@@ -41,36 +54,38 @@ class Level:
         elif keys[pygame.K_p]:
             self.create_overworld(self.current_level, 0)
 
-    def setup_level(self, layout, change_health):
-        self.tiles = pygame.sprite.Group()
-        self.coins = pygame.sprite.Group()
-        self.spikes = pygame.sprite.Group()
-        self.player = pygame.sprite.GroupSingle()
-        self.goal = pygame.sprite.GroupSingle()
-        self.key = pygame.sprite.GroupSingle()
+    def create_tile_group(self, layout, type):
+        sprite_group = pygame.sprite.Group()
 
         for row_index, row in enumerate(layout):
-            for col_index, cell in enumerate(row):
+            for col_index, val in enumerate(row):
+                if val != '-1':
+                    x = col_index * tile_size
+                    y = row_index * tile_size
+
+                    if type == 'terrain':
+                        terrain_tile_list = import_cut_graphics('graphics/terrain/terrain_tiles.png')
+                        tile_surface = terrain_tile_list[int(val)]
+                        sprite = StaticTile(tile_size, x, y, tile_surface)
+                    if type == 'coins':
+                        sprite = Coin(tile_size, x, y, 'graphics/coins')
+                        
+                    sprite_group.add(sprite)
+
+        return sprite_group
+
+    def player_setup(self, layout, change_health):
+        for row_index, row in enumerate(layout):
+            for col_index, val in enumerate(row):
                 x = col_index * tile_size
                 y = row_index * tile_size
-                if cell == 'X':
-                    tile = Tile(tile_size, x, y)
-                    self.tiles.add(tile)
-                elif cell == 'C':
-                    coin = Coin(tile_size, x, y)
-                    self.coins.add(coin)
-                elif cell == 'S':
-                    spike = Spike(tile_size, x, y)
-                    self.spikes.add(spike)
-                elif cell == 'P':
-                    player_sprite = Player((x, y), self.display_surface, change_health)
-                    self.player.add(player_sprite)
-                elif cell == 'G':
-                    goal_sprite = Goal(tile_size, x, y)
-                    self.goal.add(goal_sprite)
-                elif cell == 'K':
-                    key_sprite = Key(tile_size, x, y)
-                    self.key.add(key_sprite)
+                if val == '0':
+                    sprite = Player((x, y), self.display_surface, change_health)
+                    self.player.add(sprite)
+                if val == '1':
+                    chess_surface = pygame.image.load('graphics/chess/chess__0.png').convert_alpha()
+                    sprite = StaticTile(tile_size, x, y, chess_surface)
+                    self.goal.add(sprite)
 
     def player_horizontal_collision(self, tiles):
         player = self.player.sprite
@@ -126,7 +141,7 @@ class Level:
         return camera
 
     def check_win(self):
-        if pygame.sprite.spritecollide(self.player.sprite, self.goal, False) and self.key_find:
+        if pygame.sprite.spritecollide(self.player.sprite, self.goal, False):
             self.create_overworld(self.current_level, self.new_max_level)
 
     def check_key_collision(self):
@@ -135,7 +150,7 @@ class Level:
             self.change_key(1)
     
     def check_coin_collision(self):
-        collided_coins = pygame.sprite.spritecollide(self.player.sprite, self.coins, True)
+        collided_coins = pygame.sprite.spritecollide(self.player.sprite, self.coin_sprites, True)
         if collided_coins:
             for coin in collided_coins:
                 self.change_coins(1)
@@ -145,25 +160,7 @@ class Level:
         player = self.player.sprite
 
         if spike_collisions:
-            self.player_horizontal_collision(self.spikes)
-            self.player_vertical_collision(self.spikes)
             player.get_damage()
-            # for spike in spike_collisions:
-            #     if spike.rect.colliderect(player):
-            #         player.get_damage()
-            #         if player.direction.x < 0:
-            #             player.rect.left = spike.rect.right
-            #         elif player.direction.x > 0:
-            #             player.rect.right = spike.rect.left
-            # for spike in spike_collisions:
-            #     if spike.rect.colliderect(player):
-            #         player.get_damage()
-            #         if player.direction.y > 0:
-            #             player.rect.bottom = spike.rect.top
-            #             player.direction.y = 0
-            #         elif player.direction.y < 0:
-            #             player.rect.top = spike.rect.bottom
-            #             player.direction.y = 0
 
     def run(self):
         self.input()
@@ -172,26 +169,25 @@ class Level:
         self.camera.update(self.player.sprite)
 
         # Tiles
-        for tile in self.tiles:
+        for tile in self.terrain_sprites:
             self.display_surface.blit(tile.image, self.camera.apply(tile))
-        for coin in self.coins:
-            self.display_surface.blit(coin.image, self.camera.apply(coin))
-        for spike in self.spikes:
-            self.display_surface.blit(spike.image, self.camera.apply(spike))
-        for goal in self.goal:
-            self.display_surface.blit(goal.image, self.camera.apply(goal))
-        for key in self.key:
-            self.display_surface.blit(key.image, self.camera.apply(key))
 
         # PLayer
         self.player.update()
-        self.player_horizontal_collision(self.tiles)
-        self.player_vertical_collision(self.tiles)
+        self.player_horizontal_collision(self.terrain_sprites)
+        self.player_vertical_collision(self.terrain_sprites)
         for player_sprite in self.player:
             self.display_surface.blit(player_sprite.image, self.camera.apply(player_sprite))
+        for tile in self.goal:
+            self.display_surface.blit(tile.image, self.camera.apply(tile))
 
-        self.check_key_collision()
+        # Coins
+        self.coin_sprites.update()
+        for tile in self.coin_sprites:
+            self.display_surface.blit(tile.image, self.camera.apply(tile))
+
+        # self.check_key_collision()
         self.check_win()
         self.check_coin_collision()
-        self.check_spike_collision()
+        # self.check_spike_collision()
 
