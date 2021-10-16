@@ -114,9 +114,9 @@ class Player(pygame.sprite.Sprite):
             self.direction.x = -1
             self.facing_right = False
         elif keys[pygame.K_SPACE] and self.on_ground:
-            self.jump()
+            self.jump(self.jump_speed)
         elif keys[pygame.K_RIGHT] and keys[pygame.K_SPACE] and self.on_ground:
-            self.jump()
+            self.jump(self.jump_speed)
             self.direction.x = 1
             self.facing_right = True
         else:
@@ -137,8 +137,8 @@ class Player(pygame.sprite.Sprite):
         self.direction.y += self.gravity
         self.rect.y += self.direction.y
 
-    def jump(self):
-        self.direction.y = self.jump_speed
+    def jump(self, strenght):
+        self.direction.y = strenght
 
     def get_damage(self):
         if not self.invincible:

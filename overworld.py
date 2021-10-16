@@ -7,7 +7,7 @@ class Node(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.Surface((190, 89))
         if status == 'available':
-            self.image.fill('green')
+            self.image.fill('#000000')
         elif status == 'locked':
             self.image.fill('red')
 
@@ -21,7 +21,7 @@ class Icon(pygame.sprite.Sprite):
         super().__init__()
         self.pos = pos
         self.image = pygame.Surface((200, 99))
-        self.image.fill('blue')
+        self.image.fill('#FFFFFF')
         self.rect = self.image.get_rect(center=pos)
 
     def update(self):

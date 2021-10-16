@@ -52,3 +52,25 @@ class Key(AnimatedTile):
         center_x = x + int(size / 2)
         center_y = y + int(size / 2)
         self.rect = self.image.get_rect(center=(center_x, center_y))
+
+
+class Torche(AnimatedTile):
+    def __init__(self, size, x, y, path, radius, fog):
+        super().__init__(size, x, y, path)
+        self.fog = fog
+
+        center_x = x + int(size / 2)
+        center_y = y + int(size / 2)
+        self.rect = self.image.get_rect(center=(center_x, center_y))
+
+        self.light_mask = pygame.image.load('graphics/light_mask.png')
+        self.light_mask = pygame.transform.scale(self.light_mask, (radius, radius))
+        self.light_rect = self.image.get_rect(center=self.rect.center)
+        self.fog.blit(self.light_mask, self.light_rect)
+
+
+
+class JumpPad(AnimatedTile):
+    def __init__(self, size, x, y, path):
+        super().__init__(size, x, y, path)
+        self.rect.y += size - self.image.get_size()[1]
