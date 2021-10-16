@@ -74,3 +74,4 @@ class JumpPad(AnimatedTile):
     def __init__(self, size, x, y, path):
         super().__init__(size, x, y, path)
         self.rect.y += size - self.image.get_size()[1]
+        
