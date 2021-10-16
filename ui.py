@@ -15,11 +15,13 @@ class UI:
 
         # Coins
         self.coin = pygame.image.load('graphics/ui/coin.png').convert_alpha()
-        # 50, 61
-        self.coin_rect = self.coin.get_rect(topleft=(30, 42))
-        self.font = pygame.font.Font('graphics/ui/ARCADEPI.TTF', 25)
+        self.coin_rect = self.coin.get_rect(topleft=(20, 60))
 
         # Key
+        self.key = pygame.image.load('graphics/ui/key.png').convert_alpha()
+        self.key_rect = self.key.get_rect(topleft=(20, 85))
+
+        self.font = pygame.font.Font('graphics/ui/Gamer.TTF', 26)
 
     def show_health(self, current_health, full):
         self.display_surface.blit(self.health_bar, (20, 20))
@@ -31,10 +33,11 @@ class UI:
     def show_coins(self, amount):
         self.display_surface.blit(self.coin, self.coin_rect)
         coin_amount_surf = self.font.render(str(amount), False, 'white')
-        coin_amount_rect = coin_amount_surf.get_rect(midleft=(self.coin_rect.right + 4, self.coin_rect.centery))
+        coin_amount_rect = coin_amount_surf.get_rect(midleft=(self.coin_rect.right + 2, self.coin_rect.centery - 3))
         self.display_surface.blit(coin_amount_surf, coin_amount_rect)
 
     def show_key(self, amount):
+        self.display_surface.blit(self.key, self.key_rect)
         key_amount_surf = self.font.render(str(amount), False, 'white')
-        key_amount_rect = key_amount_surf.get_rect(midleft=(50, 120))
+        key_amount_rect = key_amount_surf.get_rect(midleft=(self.key_rect.right + 2, self.key_rect.centery - 3))
         self.display_surface.blit(key_amount_surf, key_amount_rect)

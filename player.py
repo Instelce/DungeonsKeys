@@ -11,7 +11,8 @@ class Player(pygame.sprite.Sprite):
         self.animation_speed = 0.15
         self.image = self.animations['idle'][self.frame_index]
         self.rect = self.image.get_rect(topleft=pos)
-
+        
+        self.pos = pos
         self.display_surface = surface
 
         # Player movement
@@ -101,6 +102,7 @@ class Player(pygame.sprite.Sprite):
                 pos = self.rect.bottomright - pygame.math.Vector2(6, 10)
                 flipped_dust_particle = pygame.transform.flip(dust_particle, True, False)
                 self.display_surface.blit(flipped_dust_particle, pos)
+
 
     def get_input(self):
         keys = pygame.key.get_pressed()

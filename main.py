@@ -15,11 +15,19 @@ class Game:
         self.max_health = 100
         self.current_health = 100
         self.coins_amount = 0
-        self.key = 0
+        self.key_amount = 0
 
         # Overworld creation
-        self.overworld = Overworld(0, self.max_level, screen, self.create_level)
-        self.status = 'overworld'
+        self.level = Level(0,
+                           screen,
+                           self.create_overworld,
+                           self.change_coins,
+                           self.change_health,
+                           self.change_key,
+                           self.key_find)
+        self.status = 'level'
+        # self.overworld = Overworld(0, self.max_level, screen, self.create_level)
+        # self.status = 'overworld'
 
         # User interface
         self.ui = UI(screen)
@@ -47,10 +55,10 @@ class Game:
         self.current_health += amount
 
     def change_key(self, amount):
-        self.key += amount
+        self.key_amount += amount
 
     def key_find(self):
-        if self.key == 1: return True
+        if self.key_amount == 1: return True
         else: return False
 
     def check_game_over(self):
@@ -69,7 +77,7 @@ class Game:
             self.level.run()
             self.ui.show_health(self.current_health, self.max_health)
             self.ui.show_coins(self.coins_amount)
-            # self.ui.show_key(self.key)
+            self.ui.show_key(self.key_amount)
             self.check_game_over()
 
 
@@ -80,7 +88,7 @@ game = Game()
 
 # Game loop
 while True:
-    for event in pygame.event.get():
+    for event in pygame.event.get(): 
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()

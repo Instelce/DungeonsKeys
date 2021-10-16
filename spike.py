@@ -9,7 +9,7 @@ class Spike(AnimatedTile):
 		center_x = x + int(size / 2)
 		center_y = y + int(size / 2)
 		self.rect = self.image.get_rect(center=(center_x, center_y))
-		self.speed = randint(2, 4)
+		self.speed = randint(2, 6)
 		self.angle = 0
 		self.direction = direction
 

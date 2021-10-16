@@ -26,7 +26,6 @@ class Level:
         player_layout = import_csv_layout(level_data['player'])
         self.player = pygame.sprite.GroupSingle()
         self.goal = pygame.sprite.GroupSingle()
-        self.player_setup(player_layout, change_health)
 
         # Terrain
         terrain_layout = import_csv_layout(level_data['terrain'])
@@ -56,8 +55,12 @@ class Level:
 
         # Setup camera
         total_level_width = len(terrain_layout[0]) * tile_size
-        total_level_height = screen_height * tile_size
+        total_level_height = len(terrain_layout) * tile_size
         self.camera = Camera(self.complex_camera, total_level_width, total_level_height)
+
+        self.player_setup(player_layout, change_health)
+
+        
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -161,11 +164,11 @@ class Level:
         return camera
 
     def check_win(self):
-        if pygame.sprite.spritecollide(self.player.sprite, self.goal, False):
+        if pygame.sprite.spritecollide(self.player.sprite, self.goal, False) and self.key_find():
             self.create_overworld(self.current_level, self.new_max_level)
 
     def check_key_collision(self):
-        collided_key = pygame.sprite.spritecollide(self.player.sprite, self.key, True)
+        collided_key = pygame.sprite.spritecollide(self.player.sprite, self.key_sprites, True)
         if collided_key:
             self.change_key(1)
     
@@ -222,15 +225,17 @@ class Level:
         self.player.update()
         self.player_horizontal_collision(self.terrain_sprites)
         self.player_vertical_collision(self.terrain_sprites)
-        for player_sprite in self.player:
-            self.display_surface.blit(player_sprite.image, self.camera.apply(player_sprite))
         for tile in self.goal:
             self.display_surface.blit(tile.image, self.camera.apply(tile))
+        for player_sprite in self.player:
+            self.display_surface.blit(player_sprite.image, self.camera.apply(player_sprite))
+        for pixel in self.player:
+            self.display_surface.blit(player_sprite.image, self.camera.apply(player_sprite))
 
         # Check collision
         self.check_win()
-        self.check_coin_collision()
-        # self.check_key_collision()
+        self.check_coin_collision() 
+        self.check_key_collision()
         self.check_spike_collision()
 
         # Coins
@@ -239,7 +244,7 @@ class Level:
             self.display_surface.blit(tile.image, self.camera.apply(tile))
 
         # Keys
-        self.key_sprites.update()
+        self.key_sprites.update() 
         for tile in self.key_sprites:
             self.display_surface.blit(tile.image, self.camera.apply(tile))
 
