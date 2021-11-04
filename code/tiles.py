@@ -55,18 +55,23 @@ class Key(AnimatedTile):
 
 
 class Torche(AnimatedTile):
-    def __init__(self, size, x, y, path, radius, fog):
+    def __init__(self, size, x, y, path, radius, fog, camera):
         super().__init__(size, x, y, path)
         self.fog = fog
+        self.camera = camera
 
         center_x = x + int(size / 2)
         center_y = y + int(size / 2)
         self.rect = self.image.get_rect(center=(center_x, center_y))
 
-        self.light_mask = pygame.image.load('graphics/light_mask.png')
-        self.light_mask = pygame.transform.scale(self.light_mask, (radius, radius))
-        self.light_rect = self.image.get_rect(center=self.rect.center)
-        self.fog.blit(self.light_mask, self.light_rect)
+        # self.light_mask = pygame.image.load('graphics/light_mask.png')
+        # self.light_mask = pygame.transform.scale(self.light_mask, (radius, radius))
+        # self.light_rect = self.image.get_rect(center=camera.apply(self.rect.topleft))
+        # self.fog.blit(self.light_mask, self.light_rect)
+
+    def update(self):
+        pass
+        # self.light_rect.center = self.camera.apply(self.rect.center)
 
 
 

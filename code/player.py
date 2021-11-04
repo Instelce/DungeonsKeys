@@ -11,13 +11,13 @@ class Player(pygame.sprite.Sprite):
         self.animation_speed = 0.15
         self.image = self.animations['idle'][self.frame_index]
         self.rect = self.image.get_rect(topleft=pos)
-        
+
         self.pos = pos
         self.display_surface = surface
 
         # Player movement
         self.direction = pygame.math.Vector2(0, 0)
-        self.speed = 6
+        self.speed = 10
         self.gravity = 0.8
         self.jump_speed = -20
 
@@ -49,7 +49,8 @@ class Player(pygame.sprite.Sprite):
             self.animations[animation] = import_folder(full_path)
 
     def import_dust_run_particles(self):
-        self.dust_run_particles = import_folder('graphics/character/dust_particles/run')
+        self.dust_run_particles = import_folder(
+            'graphics/character/dust_particles/run')
 
     def animate(self):
         animation = self.animations[self.status]
@@ -100,9 +101,9 @@ class Player(pygame.sprite.Sprite):
                 self.display_surface.blit(dust_particle, pos)
             else:
                 pos = self.rect.bottomright - pygame.math.Vector2(6, 10)
-                flipped_dust_particle = pygame.transform.flip(dust_particle, True, False)
+                flipped_dust_particle = pygame.transform.flip(
+                    dust_particle, True, False)
                 self.display_surface.blit(flipped_dust_particle, pos)
-
 
     def get_input(self):
         keys = pygame.key.get_pressed()

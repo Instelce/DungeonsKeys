@@ -25,7 +25,7 @@ class Level:
 
         # Night setup
         self.fog = pygame.Surface((screen_width, screen_height))
-        self.fog.fill((40, 40, 40))
+        self.fog.fill((255, 255, 255))
 
         # PLayer
         player_layout = import_csv_layout(level_data['player'])
@@ -34,11 +34,13 @@ class Level:
 
         # Terrain
         terrain_layout = import_csv_layout(level_data['terrain'])
-        self.terrain_sprites = self.create_tile_group(terrain_layout, 'terrain')
+        self.terrain_sprites = self.create_tile_group(
+            terrain_layout, 'terrain')
 
         # Jump pads
         jump_pads_layout = import_csv_layout(level_data['jump_pads'])
-        self.jump_pad_sprites = self.create_tile_group(jump_pads_layout, 'jump_pads')
+        self.jump_pad_sprites = self.create_tile_group(
+            jump_pads_layout, 'jump_pads')
 
         # Coins
         coin_layout = import_csv_layout(level_data['coins'])
@@ -51,7 +53,6 @@ class Level:
         # Torches
         torche_layout = import_csv_layout(level_data['torches'])
         self.torche_sprites = pygame.sprite.Group()
-        self.torche_setup(torche_layout)
 
         # Spikes
         spike_layout = import_csv_layout(level_data['spikes'])
@@ -59,7 +60,8 @@ class Level:
 
         # Constraint
         constraint_layout = import_csv_layout(level_data['constraints'])
-        self.constraint_sprites = self.create_tile_group(constraint_layout, 'constraints')
+        self.constraint_sprites = self.create_tile_group(
+            constraint_layout, 'constraints')
 
         # User interface
         self.change_coins = change_coins
@@ -70,19 +72,14 @@ class Level:
         # Setup camera
         total_level_width = len(terrain_layout[0]) * tile_size
         total_level_height = len(terrain_layout) * tile_size
-        self.camera = Camera(self.complex_camera, total_level_width, total_level_height)
+        self.camera = Camera(self.complex_camera,
+                             total_level_width, total_level_height)
 
         self.player_setup(player_layout, change_health)
+        self.torche_setup(torche_layout, self.fog, self.camera)
 
-        
-
-    def input(self):
-        keys = pygame.key.get_pressed()
-
-        if keys[pygame.K_o]:
-            self.create_overworld(self.current_level, self.new_max_level)
-        elif keys[pygame.K_p]:
-            self.create_overworld(self.current_level, 0)
+        self.mouse_light = Light(pygame.mouse.get_pos()[
+                                 0], pygame.mouse.get_pos()[1], 200, self.fog)
 
     def create_tile_group(self, layout, type):
         sprite_group = pygame.sprite.Group()
@@ -94,21 +91,25 @@ class Level:
                     y = row_index * tile_size
 
                     if type == 'terrain':
-                        terrain_tile_list = import_cut_graphics('graphics/terrain/terrain_tiles.png')
+                        terrain_tile_list = import_cut_graphics(
+                            'graphics/terrain/terrain_tiles.png')
                         tile_surface = terrain_tile_list[int(val)]
                         sprite = StaticTile(tile_size, x, y, tile_surface)
                     if type == 'jump_pads':
-                        sprite = JumpPad(tile_size, x, y, 'graphics/jump_pad/bounced')
+                        sprite = JumpPad(
+                            tile_size, x, y, 'graphics/jump_pad/bounced')
                     if type == 'coins':
                         sprite = Coin(tile_size, x, y, 'graphics/coins')
                     if type == 'keys':
                         sprite = Key(tile_size, x, y, 'graphics/key/move')
                     if type == 'spikes':
-                        if val == '0': sprite = Spike(tile_size, x, y, 'vertical')
-                        elif val == '1': sprite = Spike(tile_size, x, y, 'horizontal')
+                        if val == '0':
+                            sprite = Spike(tile_size, x, y, 'vertical')
+                        elif val == '1':
+                            sprite = Spike(tile_size, x, y, 'horizontal')
                     if type == 'constraints':
                         sprite = Tile(tile_size, x, y)
-                        
+
                     sprite_group.add(sprite)
 
         return sprite_group
@@ -119,23 +120,25 @@ class Level:
                 x = col_index * tile_size
                 y = row_index * tile_size
                 if val == '0':
-                    sprite = Player((x, y), self.display_surface, change_health)
+                    sprite = Player(
+                        (x, y), self.display_surface, change_health)
 
                     self.player.add(sprite)
                 if val == '1':
-                    chess_surface = pygame.image.load('graphics/chess/chess__0.png').convert_alpha()
+                    chess_surface = pygame.image.load(
+                        'graphics/chess/chess__0.png').convert_alpha()
                     sprite = StaticTile(tile_size, x, y, chess_surface)
                     self.goal.add(sprite)
 
-    def torche_setup(self, layout):
+    def torche_setup(self, layout, fog, camera):
         for row_index, row in enumerate(layout):
             for col_index, val in enumerate(row):
                 x = col_index * tile_size
                 y = row_index * tile_size
                 if val == '0':
-                    torche = Torche(tile_size, x, y, 'graphics/torche/idle', 300, self.fog)
+                    torche = Torche(tile_size, x, y,
+                                    'graphics/torche/idle', 300, fog, camera)
                     self.torche_sprites.add(torche)
-
 
     def player_horizontal_collision(self, tiles):
         player = self.player.sprite
@@ -182,7 +185,9 @@ class Level:
         x = -target_rect.center[0] + screen_width / 2
         y = -target_rect.center[1] + screen_height / 2
         # move the camera. Let's use some vectors so we can easily substract/multiply
-        camera.topleft += (pygame.Vector2((x, y)) - pygame.Vector2(camera.topleft)) * 0.06  # add some smoothness coolnes
+        # add some smoothness coolnes
+        camera.topleft += (pygame.Vector2((x, y)) -
+                           pygame.Vector2(camera.topleft)) * 0.06
         # set max/min x/y so we don't see stuff outside the world
         camera.x = max(-(camera.width - screen_width), min(0, camera.x))
         camera.y = max(-(camera.height - screen_height), min(0, camera.y))
@@ -190,13 +195,15 @@ class Level:
         return camera
 
     def check_win(self):
-        collided_goal = pygame.sprite.spritecollide(self.player.sprite, self.goal, False)
+        collided_goal = pygame.sprite.spritecollide(
+            self.player.sprite, self.goal, False)
         if collided_goal and self.key_find():
             self.create_overworld(self.current_level, self.new_max_level)
 
     def check_jump_pad_collision(self):
         player = self.player.sprite
-        collided_jump_pad = pygame.sprite.spritecollide(player, self.jump_pad_sprites, False)
+        collided_jump_pad = pygame.sprite.spritecollide(
+            player, self.jump_pad_sprites, False)
 
         if collided_jump_pad:
             for jump_pad in collided_jump_pad:
@@ -206,45 +213,27 @@ class Level:
 
                 if jump_pad_top < player_bottom < jump_pad_center and player.direction.y >= 0:
                     self.player.sprite.direction.y = -25
-                    
+
     def check_key_collision(self):
-        collided_key = pygame.sprite.spritecollide(self.player.sprite, self.key_sprites, True)
+        collided_key = pygame.sprite.spritecollide(
+            self.player.sprite, self.key_sprites, True)
         if collided_key:
             self.change_key(1)
-    
+
     def check_coin_collision(self):
-        collided_coins = pygame.sprite.spritecollide(self.player.sprite, self.coin_sprites, True)
+        collided_coins = pygame.sprite.spritecollide(
+            self.player.sprite, self.coin_sprites, True)
         if collided_coins:
             for coin in collided_coins:
                 self.change_coins(1)
 
     def check_spike_collision(self):
-        spike_collisions = pygame.sprite.spritecollide(self.player.sprite, self.spike_sprites, False)
+        spike_collisions = pygame.sprite.spritecollide(
+            self.player.sprite, self.spike_sprites, False)
         player = self.player.sprite
 
         if spike_collisions:
-            for sprite in self.spike_sprites.sprites():
-                if sprite.rect.colliderect(player.rect):
-                    if player.direction.x < 0:
-                        player.rect.left = sprite.rect.right
-                        player.on_left = True
-                        self.current_x = player.rect.left
-                    elif player.direction.x > 0:
-                        player.rect.right = sprite.rect.left
-                        player.on_right = True
-                        self.current_x = player.rect.right
-            for sprite in self.spike_sprites.sprites():
-                if sprite.rect.colliderect(player.rect):
-                    if player.direction.y > 0:
-                        player.rect.bottom = sprite.rect.top
-                        player.direction.y = 0
-                        player.on_ground = True
-                    elif player.direction.y < 0:
-                        player.rect.top = sprite.rect.bottom
-                        player.direction.y = 0
-                        player.on_ceiling = True
             player.get_damage()
-
 
     def spike_collision_reverse(self):
         for spike in self.spike_sprites.sprites():
@@ -252,8 +241,6 @@ class Level:
                 spike.reverse()
 
     def run(self):
-        self.input()
-
         # Camera
         self.camera.update(self.player.sprite)
 
@@ -272,17 +259,17 @@ class Level:
         for tile in self.goal:
             self.display_surface.blit(tile.image, self.camera.apply(tile))
         for player_sprite in self.player:
-            self.display_surface.blit(player_sprite.image, self.camera.apply(player_sprite))
+            self.display_surface.blit(
+                player_sprite.image, self.camera.apply(player_sprite))
 
         # Torche
         self.torche_sprites.update()
         for sprite in self.torche_sprites:
             self.display_surface.blit(sprite.image, self.camera.apply(sprite))
 
-        
         # Check collision
         self.check_win()
-        self.check_coin_collision() 
+        self.check_coin_collision()
         self.check_key_collision()
         self.check_spike_collision()
         self.check_jump_pad_collision()
@@ -293,7 +280,7 @@ class Level:
             self.display_surface.blit(tile.image, self.camera.apply(tile))
 
         # Keys
-        self.key_sprites.update() 
+        self.key_sprites.update()
         for tile in self.key_sprites:
             self.display_surface.blit(tile.image, self.camera.apply(tile))
 
@@ -305,4 +292,6 @@ class Level:
             self.display_surface.blit(tile.image, self.camera.apply(tile))
 
         # Fog
-        self.display_surface.blit(self.fog, (0, 0), special_flags=pygame.BLEND_MULT)
+        self.mouse_light.update()
+        self.display_surface.blit(
+            self.fog, (0, 0), special_flags=pygame.BLEND_MULT)

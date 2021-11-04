@@ -13,4 +13,4 @@ class Light(pygame.sprite.Sprite):
 		self.image = pygame.transform.scale(self.image, (radius, radius))
 
 	def update(self):
-		pass
+		self.display_surface.blit(self.image, self.rect)

@@ -3,25 +3,27 @@ from game_data import levels
 
 
 class Node(pygame.sprite.Sprite):
-    def __init__(self, pos, status, icon_speed):
+    def __init__(self, pos, status, icon_speed, path):
         super().__init__()
-        self.image = pygame.Surface((190, 89))
+        self.image = pygame.image.load(path)
         if status == 'available':
-            self.image.fill('#000000')
-        elif status == 'locked':
-            self.image.fill('red')
-
+            self.status = 'available'
+            self.image.set_alpha(255)
+        else:
+            self.status = 'locked'
+            self.image.set_alpha(100)
         self.rect = self.image.get_rect(center=pos)
 
-        self.detection_zone = pygame.Rect(self.rect.centerx - (icon_speed / 2), self.rect.centery - (icon_speed / 2), icon_speed, icon_speed)
+        self.detection_zone = pygame.Rect(self.rect.centerx - (
+            icon_speed / 2), self.rect.centery - (icon_speed / 2), icon_speed, icon_speed)
 
 
 class Icon(pygame.sprite.Sprite):
     def __init__(self, pos):
         super().__init__()
         self.pos = pos
-        self.image = pygame.Surface((200, 99))
-        self.image.fill('#FFFFFF')
+        self.image = pygame.image.load(
+            'graphics/overworld/select_icon.png').convert_alpha()
         self.rect = self.image.get_rect(center=pos)
 
     def update(self):
@@ -40,7 +42,7 @@ class Overworld:
         # Movement logic
         self.moving = False
         self.move_direction = pygame.math.Vector2(0, 0)
-        self.speed = 8
+        self.speed = 10
 
         # Title
         self.title = pygame.image.load('graphics/banner.png')
@@ -55,14 +57,17 @@ class Overworld:
 
         for index, node_data in enumerate(levels.values()):
             if index <= self.max_level:
-                node_sprite = Node(node_data['node_pos'], 'available', self.speed)
+                node_sprite = Node(
+                    node_data['node_pos'], 'available', self.speed, node_data['node_graphic'])
             else:
-                node_sprite = Node(node_data['node_pos'], 'locked', self.speed)
+                node_sprite = Node(
+                    node_data['node_pos'], 'locked', self.speed, node_data['node_graphic'])
             self.nodes.add(node_sprite)
 
     def setup_icon(self):
         self.icon = pygame.sprite.GroupSingle()
-        icon_sprite = Icon(self.nodes.sprites()[self.current_level].rect.center)
+        icon_sprite = Icon(self.nodes.sprites()[
+                           self.current_level].rect.center)
         self.icon.add(icon_sprite)
 
     def input(self):
@@ -81,12 +86,15 @@ class Overworld:
                 self.create_level(self.current_level)
 
     def get_movement_data(self, target):
-        start = pygame.math.Vector2(self.nodes.sprites()[self.current_level].rect.center)
+        start = pygame.math.Vector2(
+            self.nodes.sprites()[self.current_level].rect.center)
 
         if target == 'next':
-            end = pygame.math.Vector2(self.nodes.sprites()[self.current_level + 1].rect.center)
+            end = pygame.math.Vector2(
+                self.nodes.sprites()[self.current_level + 1].rect.center)
         else:
-            end = pygame.math.Vector2(self.nodes.sprites()[self.current_level - 1].rect.center)
+            end = pygame.math.Vector2(
+                self.nodes.sprites()[self.current_level - 1].rect.center)
 
         return (end - start).normalize()
 
@@ -102,7 +110,7 @@ class Overworld:
         self.input()
         self.update_icon_pos()
         self.icon.update()
-        self.icon.draw(self.display_surface)
         self.nodes.draw(self.display_surface)
+        self.icon.draw(self.display_surface)
 
         self.display_surface.blit(self.title, self.title_rect)
