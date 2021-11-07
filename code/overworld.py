@@ -1,4 +1,5 @@
 import pygame
+from settings import *
 from game_data import levels
 
 
@@ -47,6 +48,11 @@ class Overworld:
         # Title
         self.title = pygame.image.load('graphics/banner.png')
         self.title_rect = self.title.get_rect(topleft=(50, 0))
+
+        # Selection
+        self.selection = pygame.image.load('graphics/selection.png')
+        self.selection_rect = self.title.get_rect(
+            center=(screen_width - int(screen_width / 4), screen_height - 50))
 
         # Sprites
         self.setup_nodes()
@@ -114,3 +120,4 @@ class Overworld:
         self.icon.draw(self.display_surface)
 
         self.display_surface.blit(self.title, self.title_rect)
+        self.display_surface.blit(self.selection, self.selection_rect)
